@@ -111,6 +111,7 @@
   .row.is-archived{opacity:0.45;}
   .finished-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;}
   .btn.primary#toggleArchived{background:var(--text);color:var(--surface);border-color:var(--text);}
+  .btn.primary#toggleOpenedOnly{background:var(--text);color:var(--surface);border-color:var(--text);}
   .bean{min-width:0;}
   .bean-name{font-family:'Fraunces',serif;font-weight:600;font-size:14.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .bean-meta{font-size:10px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
@@ -170,6 +171,7 @@
     <button class="btn primary" id="toggleAddForm">+ Add bean</button>
     <button class="btn" id="toggleRoasterPanel">⚙ Roasters: default rest</button>
     <button class="btn" id="toggleArchived">☕ Show finished (<span id="archivedCount">0</span>)</button>
+    <button class="btn" id="toggleOpenedOnly">📦 Only opened (<span id="openedCount">0</span>)</button>
   </div>
 
   <div class="searchbar">
@@ -408,6 +410,7 @@ let importedIds = [];
 let editingId = null;
 let confirmDeleteId = null;
 let showArchived = false;
+let showOpenedOnly = false;
 let searchQuery = '';
 let sortBy = 'rest';
 let sortDir = 'asc';
@@ -531,6 +534,11 @@ document.getElementById('toggleRoasterPanel').addEventListener('click', () => {
 document.getElementById('toggleArchived').addEventListener('click', () => {
   showArchived = !showArchived;
   document.getElementById('toggleArchived').classList.toggle('primary', showArchived);
+  render();
+});
+document.getElementById('toggleOpenedOnly').addEventListener('click', () => {
+  showOpenedOnly = !showOpenedOnly;
+  document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
   render();
 });
 
@@ -684,19 +692,25 @@ function render(){
 
   const archivedFiltered = showArchived ? beans : beans.filter(b => !b.archived);
 
-  const visibleBeans = searchQuery ? archivedFiltered.filter(b => {
+  const openedCount = archivedFiltered.filter(b => b.openDate).length;
+  document.getElementById('toggleOpenedOnly').innerHTML = `📦 Only opened (<span id="openedCount">${openedCount}</span>)`;
+
+  const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate) : archivedFiltered;
+
+  const visibleBeans = searchQuery ? openedFiltered.filter(b => {
     const haystack = [b.roaster, b.name, b.country, b.variety, b.processing, b.roastLevel, b.notes]
       .filter(Boolean).join(' ').toLowerCase();
     return haystack.includes(searchQuery);
-  }) : archivedFiltered;
+  }) : openedFiltered;
 
   document.getElementById('searchCount').textContent = searchQuery
-    ? `${visibleBeans.length} of ${archivedFiltered.length}`
+    ? `${visibleBeans.length} of ${openedFiltered.length}`
     : '';
 
   if(visibleBeans.length === 0){
     let msg = 'No beans yet — add your first one with the button above.';
     if(beans.length > 0 && searchQuery) msg = `No beans match "${searchQuery}".`;
+    else if(showOpenedOnly) msg = 'No opened bags right now.';
     else if(beans.length > 0) msg = 'No active beans — click "Show finished" to see finished bags.';
     chart.innerHTML = `<div class="empty">${msg}</div>`;
     return;
