@@ -267,7 +267,7 @@
 // ---- beans added via chat with Claude (I edit this array on request) ----
 const pendingImports = [
   { id:"p1", roaster:"Still", name:"Faysel Abdosh", country:"Ethiopia", masl:"2350–2400", processing:"Washed", variety:"Ethiopian Heirloom", roastLevel:"", roastDate:"2026-07-19", bestFromWeeks:8, bestUntilWeeks:14, weight:100, notes:"Guji Hambela, Deri, Faysel Abdosh Project 2, Ethiopian Heirloom, Double Fermentation Washed (24h anaerobic cherry immersion + 24h cold fermentation); peach/lemon/jasmine/black tea" },
-  { id:"p2", roaster:"Still", name:"Llacta Pata", country:"Peru", masl:"2300", processing:"Honey", variety:"SL9", roastLevel:"", roastDate:"2026-07-19", bestFromWeeks:6, bestUntilWeeks:12, weight:100, notes:"Producer Gilber Huayllas, farm Llacta Pata, Pacaybamba, Incahuasi Valley, Cusco. Variety SL9. white flowers/stone fruits/lemon zest" },
+  { id:"p2", roaster:"Still", name:"Llacta Pata", country:"Peru", masl:"2300", processing:"Honey", variety:"SL9", roastLevel:"", roastDate:"2026-07-19", bestFromWeeks:8, bestUntilWeeks:12, weight:100, notes:"Producer Gilber Huayllas, farm Llacta Pata, Pacaybamba, Incahuasi Valley, Cusco. Variety SL9. white flowers/stone fruits/lemon zest. Rest updated to 8+ weeks per your note" },
   { id:"p3", roaster:"Still", name:"Lisbeth Mariño", country:"Peru", masl:"2290", processing:"Washed", variety:"SL9", roastLevel:"", roastDate:"2026-07-17", bestFromWeeks:8, bestUntilWeeks:14, weight:100, notes:"Farm Incahuasi, Inkawasi, Cusco. Producer Lisbet Mariño. Variety SL-09. mangosteen/passionfruit/creamy/raspberry/hibiscus" },
   { id:"p4", roaster:"Still", name:"Masincho Premium", country:"Ethiopia", masl:"2300", processing:"Washed", variety:"74158", roastLevel:"", roastDate:"2026-07-12", bestFromWeeks:8, bestUntilWeeks:14, weight:100, notes:"Sidama, Arbegona, Chericho, Mandame. Washing station Yaye-Testi. Variety 74158. dried apricot/white flowers/jasmine/citrus/black tea" },
   { id:"p5", roaster:"Still", name:"Sewda Premium", country:"Ethiopia", masl:"1900–2100", processing:"Washed", variety:"Ethiopian Heirloom", roastLevel:"", roastDate:"2026-07-17", bestFromWeeks:8, bestUntilWeeks:14, weight:100, notes:"Guji, Oddo Shakisso, Benti Korba. Washing station Sewda. Ethiopian Heirloom. stone fruits/bergamot/black tea/citrus" },
@@ -430,6 +430,7 @@ const pendingPatches = [
   { id:"patch_weight_p53", targetId:"p53", set:{ weight:20 } },
   { id:"patch_weight_p52", targetId:"p52", set:{ weight:100 } },
   { id:"patch_open_p52_20260827", targetId:"p52", set:{ openDate:"2026-08-27" } },
+  { id:"patch_rest_p2_8wk", targetId:"p2", set:{ bestFromWeeks:8 } },
   { id:"patch_weight_p54", targetId:"p54", set:{ weight:60 } }
 ];
 
