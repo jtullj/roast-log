@@ -172,6 +172,7 @@
     <button class="btn" id="toggleRoasterPanel">⚙ Roasters: default rest</button>
     <button class="btn" id="toggleArchived">☕ Show finished (<span id="archivedCount">0</span>)</button>
     <button class="btn" id="toggleOpenedOnly">📦 Only opened (<span id="openedCount">0</span>)</button>
+    <button class="btn" id="toggleClosedOnly">🔒 Only closed (<span id="closedCount">0</span>)</button>
   </div>
 
   <div class="searchbar">
@@ -439,6 +440,7 @@ let editingId = null;
 let confirmDeleteId = null;
 let showArchived = false;
 let showOpenedOnly = false;
+let showClosedOnly = false;
 let searchQuery = '';
 let sortBy = 'rest';
 let sortDir = 'asc';
@@ -566,6 +568,15 @@ document.getElementById('toggleArchived').addEventListener('click', () => {
 });
 document.getElementById('toggleOpenedOnly').addEventListener('click', () => {
   showOpenedOnly = !showOpenedOnly;
+  if(showOpenedOnly) showClosedOnly = false;
+  document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
+  document.getElementById('toggleClosedOnly').classList.toggle('primary', showClosedOnly);
+  render();
+});
+document.getElementById('toggleClosedOnly').addEventListener('click', () => {
+  showClosedOnly = !showClosedOnly;
+  if(showClosedOnly) showOpenedOnly = false;
+  document.getElementById('toggleClosedOnly').classList.toggle('primary', showClosedOnly);
   document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
   render();
 });
@@ -723,7 +734,12 @@ function render(){
   const openedCount = archivedFiltered.filter(b => b.openDate).length;
   document.getElementById('toggleOpenedOnly').innerHTML = `📦 Only opened (<span id="openedCount">${openedCount}</span>)`;
 
-  const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate) : archivedFiltered;
+  const closedCount = archivedFiltered.filter(b => !b.openDate).length;
+  document.getElementById('toggleClosedOnly').innerHTML = `🔒 Only closed (<span id="closedCount">${closedCount}</span>)`;
+
+  const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate)
+    : showClosedOnly ? archivedFiltered.filter(b => !b.openDate)
+    : archivedFiltered;
 
   const visibleBeans = searchQuery ? openedFiltered.filter(b => {
     const haystack = [b.roaster, b.name, b.country, b.variety, b.processing, b.roastLevel, b.notes]
@@ -739,6 +755,7 @@ function render(){
     let msg = 'No beans yet — add your first one with the button above.';
     if(beans.length > 0 && searchQuery) msg = `No beans match "${searchQuery}".`;
     else if(showOpenedOnly) msg = 'No opened bags right now.';
+    else if(showClosedOnly) msg = 'No closed (unopened) bags right now.';
     else if(beans.length > 0) msg = 'No active beans — click "Show finished" to see finished bags.';
     chart.innerHTML = `<div class="empty">${msg}</div>`;
     return;
