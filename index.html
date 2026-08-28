@@ -884,8 +884,21 @@ function render(){
   // today line overlay
   chart.style.position = 'relative';
   const overlay = document.createElement('div');
-  overlay.style.position='absolute'; overlay.style.top='0'; overlay.style.left='220px';
-  overlay.style.right='96px'; overlay.style.bottom='0'; overlay.style.pointerEvents='none';
+  overlay.style.position='absolute'; overlay.style.top='0'; overlay.style.bottom='0'; overlay.style.pointerEvents='none';
+  // Align the overlay to the *actual* track element instead of hardcoded desktop
+  // column widths (220px/96px) — those don't match the mobile grid columns
+  // (130px/76px, see @media max-width:640px), which threw the TODAY line and
+  // all bar math out of sync on narrow screens.
+  const firstTrack = chart.querySelector('.track');
+  if(firstTrack){
+    const chartRect = chart.getBoundingClientRect();
+    const trackRect = firstTrack.getBoundingClientRect();
+    overlay.style.left = (trackRect.left - chartRect.left) + 'px';
+    overlay.style.width = trackRect.width + 'px';
+  } else {
+    overlay.style.left = '220px';
+    overlay.style.right = '96px';
+  }
   const tLine = document.createElement('div');
   tLine.className = 'today-line';
   tLine.style.left = pct(today)+'%';
