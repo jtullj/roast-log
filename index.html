@@ -110,6 +110,7 @@
   .row:first-child{border-top:none;}
   .row.is-archived{opacity:0.45;}
   .finished-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;}
+  .frozen-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--today);background:var(--surface-2);border:1px solid var(--today);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;}
   .btn.primary#toggleArchived{background:var(--text);color:var(--surface);border-color:var(--text);}
   .btn.primary#toggleOpenedOnly{background:var(--text);color:var(--surface);border-color:var(--text);}
   .bean{min-width:0;}
@@ -121,6 +122,7 @@
   .bean-meta.bean-weight{color:var(--weight);font-weight:600;white-space:normal;overflow:visible;text-overflow:clip;}
   .row-actions{display:flex;gap:6px;justify-content:flex-end;}
   .icon-btn{width:24px;height:24px;border:1px solid var(--line);background:var(--surface-2);border-radius:4px;cursor:pointer;font-size:11px;color:var(--text-dim);display:flex;align-items:center;justify-content:center;}
+  .icon-btn.primary{background:var(--today);color:var(--surface);border-color:var(--today);}
   .icon-btn:hover{border-color:var(--text-dim);color:var(--text);}
   .icon-btn.confirm{border-color:var(--danger);color:var(--danger);}
 
@@ -227,6 +229,7 @@
       <div class="field"><label>Best from, weeks</label><input type="number" step="0.5" min="0" id="f_bestfrom" placeholder="3"></div>
       <div class="field"><label>Best until, weeks</label><input type="number" step="0.5" min="0" id="f_bestuntil" placeholder="9"></div>
       <div class="field"><label>Opened (opt.)</label><input type="date" id="f_opendate"></div>
+      <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_frozen"> frozen</label></div>
       <div class="field span2"><label>Notes</label><input id="f_notes" placeholder="profile, source, etc."></div>
     </div>
     <div class="hint">If there's already a default rest for this roaster, the weeks will auto-fill — you can still adjust them.</div>
@@ -564,6 +567,7 @@ function openForm(bean){
   document.getElementById('f_bestfrom').value = bean ? bean.bestFromWeeks : '';
   document.getElementById('f_bestuntil').value = bean ? bean.bestUntilWeeks : '';
   document.getElementById('f_opendate').value = bean ? toISODate(bean.openDate) : '';
+  document.getElementById('f_frozen').checked = bean ? !!bean.frozen : false;
   document.getElementById('f_notes').value = bean ? (bean.notes||'') : '';
   document.getElementById('f_setdefault').checked = false;
   document.getElementById('addPanel').classList.add('open');
@@ -663,11 +667,12 @@ document.getElementById('saveBean').addEventListener('click', async () => {
     bestFromWeeks,
     bestUntilWeeks: bestUntilRaw ? parseFloat(bestUntilRaw) : bestFromWeeks + 6,
     openDate: document.getElementById('f_opendate').value,
+    frozen: document.getElementById('f_frozen').checked,
     notes: document.getElementById('f_notes').value.trim()
   };
   if(editingId){
     const idx = beans.findIndex(b => b.id === editingId);
-    if(idx >= 0) beans[idx] = bean;
+    if(idx >= 0){ bean.archived = beans[idx].archived; beans[idx] = bean; }
   } else {
     beans.push(bean);
   }
@@ -729,6 +734,14 @@ async function toggleArchive(id){
   const b = beans.find(x => x.id === id);
   if(!b) return;
   b.archived = !b.archived;
+  await saveBeans();
+  render();
+}
+
+async function toggleFrozen(id){
+  const b = beans.find(x => x.id === id);
+  if(!b) return;
+  b.frozen = !b.frozen;
   await saveBeans();
   render();
 }
@@ -826,7 +839,7 @@ function render(){
     const metaBits = [b.roaster, b.country, b.processing].filter(Boolean).join(' · ');
     const bean = document.createElement('div');
     bean.className = 'bean';
-    bean.innerHTML = `<div class="bean-name">${b.name}${b.archived ? ' <span class="finished-badge">finished</span>' : ''}</div><div class="bean-meta">${metaBits||'&nbsp;'}</div>
+    bean.innerHTML = `<div class="bean-name">${b.name}${b.archived ? ' <span class="finished-badge">finished</span>' : ''}${b.frozen ? ' <span class="frozen-badge">frozen</span>' : ''}</div><div class="bean-meta">${metaBits||'&nbsp;'}</div>
       <div class="bean-meta bean-masl">${b.masl ? b.masl+' masl' : ''}</div>
       <div class="bean-meta bean-variety">${b.variety ? b.variety : ''}</div>
       <div class="bean-meta bean-weight">${b.weight ? b.weight+'g bag' : ''}</div>
@@ -893,12 +906,17 @@ function render(){
     hideBtn.className = 'icon-btn'; hideBtn.textContent = b.archived ? '↩' : '☕';
     hideBtn.title = b.archived ? 'bring back (not finished)' : 'mark bag as finished (keeps data)';
     hideBtn.addEventListener('click', () => toggleArchive(b.id));
+    const freezeBtn = document.createElement('button');
+    freezeBtn.className = 'icon-btn' + (b.frozen ? ' primary' : ''); freezeBtn.textContent = '❄';
+    freezeBtn.title = b.frozen ? 'mark as not frozen' : 'mark bag as frozen';
+    freezeBtn.addEventListener('click', () => toggleFrozen(b.id));
     const delBtn = document.createElement('button');
     delBtn.className = 'icon-btn' + (confirmDeleteId===b.id ? ' confirm' : '');
     delBtn.textContent = confirmDeleteId===b.id ? '✓?' : '✕';
     delBtn.title = confirmDeleteId===b.id ? 'click again to delete' : 'delete';
     delBtn.addEventListener('click', () => deleteBean(b.id));
     actions.appendChild(editBtn);
+    actions.appendChild(freezeBtn);
     actions.appendChild(hideBtn);
     actions.appendChild(delBtn);
 
