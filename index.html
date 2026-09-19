@@ -106,7 +106,7 @@
   .sw-past{border:1px dashed var(--past);background:transparent;}
 
   .chart{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 20px 6px;}
-  .row{display:grid;grid-template-columns:200px 1fr 88px;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line);}
+  .row{display:grid;grid-template-columns:200px 1fr 122px;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line);}
   .row:first-child{border-top:none;}
   .row.is-archived{opacity:0.45;}
   .finished-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;}
@@ -143,7 +143,7 @@
   .today-line{position:absolute;top:0;width:1.5px;background:var(--today);}
   .today-line::before{content:'TODAY';position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8.5px;letter-spacing:.06em;color:var(--today);white-space:nowrap;}
 
-  .axis{display:grid;grid-template-columns:200px 1fr 88px;gap:14px;padding-top:8px;margin-top:2px;border-top:1px solid var(--line);}
+  .axis{display:grid;grid-template-columns:200px 1fr 122px;gap:14px;padding-top:8px;margin-top:2px;border-top:1px solid var(--line);}
   .axis-track{position:relative;height:16px;}
   .axis-tick{position:absolute;top:0;font-size:9px;color:var(--text-faint);transform:translateX(-50%);}
 
@@ -154,7 +154,9 @@
   @media(max-width:640px){
     .form-grid{grid-template-columns:repeat(2,1fr);}
     .field.span3{grid-column:span 2;}
-    .row, .axis{grid-template-columns:130px 1fr 76px;}
+    .row, .axis{grid-template-columns:130px 1fr 100px;}
+    .icon-btn{width:20px;height:20px;font-size:9.5px;}
+    .row-actions{gap:4px;}
   }
 </style>
 </head>
