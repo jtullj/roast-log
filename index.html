@@ -177,6 +177,7 @@
     <button class="btn" id="toggleArchived">☕ Show finished (<span id="archivedCount">0</span>)</button>
     <button class="btn" id="toggleOpenedOnly">📦 Only opened (<span id="openedCount">0</span>)</button>
     <button class="btn" id="toggleClosedOnly">🔒 Only closed (<span id="closedCount">0</span>)</button>
+    <button class="btn" id="toggleFrozenOnly">❄ Only frozen (<span id="frozenCount">0</span>)</button>
   </div>
 
   <div class="searchbar">
@@ -498,6 +499,7 @@ let confirmDeleteId = null;
 let showArchived = false;
 let showOpenedOnly = false;
 let showClosedOnly = false;
+let showFrozenOnly = false;
 let searchQuery = '';
 let sortBy = 'rest';
 let sortDir = 'asc';
@@ -626,16 +628,26 @@ document.getElementById('toggleArchived').addEventListener('click', () => {
 });
 document.getElementById('toggleOpenedOnly').addEventListener('click', () => {
   showOpenedOnly = !showOpenedOnly;
-  if(showOpenedOnly) showClosedOnly = false;
+  if(showOpenedOnly){ showClosedOnly = false; showFrozenOnly = false; }
   document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
   document.getElementById('toggleClosedOnly').classList.toggle('primary', showClosedOnly);
+  document.getElementById('toggleFrozenOnly').classList.toggle('primary', showFrozenOnly);
   render();
 });
 document.getElementById('toggleClosedOnly').addEventListener('click', () => {
   showClosedOnly = !showClosedOnly;
-  if(showClosedOnly) showOpenedOnly = false;
+  if(showClosedOnly){ showOpenedOnly = false; showFrozenOnly = false; }
   document.getElementById('toggleClosedOnly').classList.toggle('primary', showClosedOnly);
   document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
+  document.getElementById('toggleFrozenOnly').classList.toggle('primary', showFrozenOnly);
+  render();
+});
+document.getElementById('toggleFrozenOnly').addEventListener('click', () => {
+  showFrozenOnly = !showFrozenOnly;
+  if(showFrozenOnly){ showOpenedOnly = false; showClosedOnly = false; }
+  document.getElementById('toggleFrozenOnly').classList.toggle('primary', showFrozenOnly);
+  document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
+  document.getElementById('toggleClosedOnly').classList.toggle('primary', showClosedOnly);
   render();
 });
 
@@ -804,8 +816,12 @@ function render(){
   const closedCount = archivedFiltered.filter(b => !b.openDate).length;
   document.getElementById('toggleClosedOnly').innerHTML = `🔒 Only closed (<span id="closedCount">${closedCount}</span>)`;
 
+  const frozenCount = archivedFiltered.filter(b => b.frozen).length;
+  document.getElementById('toggleFrozenOnly').innerHTML = `❄ Only frozen (<span id="frozenCount">${frozenCount}</span>)`;
+
   const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate && !b.frozen)
     : showClosedOnly ? archivedFiltered.filter(b => !b.openDate)
+    : showFrozenOnly ? archivedFiltered.filter(b => b.frozen)
     : archivedFiltered;
 
   const visibleBeans = searchQuery ? openedFiltered.filter(b => {
@@ -823,6 +839,7 @@ function render(){
     if(beans.length > 0 && searchQuery) msg = `No beans match "${searchQuery}".`;
     else if(showOpenedOnly) msg = 'No opened bags right now.';
     else if(showClosedOnly) msg = 'No closed (unopened) bags right now.';
+    else if(showFrozenOnly) msg = 'No frozen bags right now.';
     else if(beans.length > 0) msg = 'No active beans — click "Show finished" to see finished bags.';
     chart.innerHTML = `<div class="empty">${msg}</div>`;
     return;
