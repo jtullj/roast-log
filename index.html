@@ -798,13 +798,13 @@ function render(){
 
   const archivedFiltered = showArchived ? beans : beans.filter(b => !b.archived);
 
-  const openedCount = archivedFiltered.filter(b => b.openDate).length;
+  const openedCount = archivedFiltered.filter(b => b.openDate && !b.frozen).length;
   document.getElementById('toggleOpenedOnly').innerHTML = `📦 Only opened (<span id="openedCount">${openedCount}</span>)`;
 
   const closedCount = archivedFiltered.filter(b => !b.openDate).length;
   document.getElementById('toggleClosedOnly').innerHTML = `🔒 Only closed (<span id="closedCount">${closedCount}</span>)`;
 
-  const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate)
+  const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate && !b.frozen)
     : showClosedOnly ? archivedFiltered.filter(b => !b.openDate)
     : archivedFiltered;
 
