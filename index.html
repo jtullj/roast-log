@@ -192,6 +192,7 @@
       <option value="country">Sort: country</option>
       <option value="variety">Sort: variety</option>
       <option value="name">Sort: name</option>
+      <option value="roastDate">Sort: roast date</option>
     </select>
     <select class="sort-dir" id="sortDir">
       <option value="asc">A → Z</option>
@@ -709,7 +710,10 @@ document.getElementById('searchClear').addEventListener('click', () => {
 });
 document.getElementById('sortSelect').addEventListener('change', (e) => {
   sortBy = e.target.value;
-  document.getElementById('sortDir').style.display = sortBy === 'rest' ? 'none' : '';
+  const dirSel = document.getElementById('sortDir');
+  dirSel.style.display = sortBy === 'rest' ? 'none' : '';
+  dirSel.options[0].textContent = sortBy === 'roastDate' ? 'oldest first' : 'A → Z';
+  dirSel.options[1].textContent = sortBy === 'roastDate' ? 'newest first' : 'Z → A';
   render();
 });
 document.getElementById('sortDir').addEventListener('change', (e) => {
@@ -903,6 +907,11 @@ function render(){
   const fieldMap = { roaster: 'roaster', country: 'country', variety: 'variety', name: 'name' };
   if(sortBy === 'rest'){
     enriched.sort((a,b) => a.bestFrom - b.bestFrom);
+  } else if(sortBy === 'roastDate'){
+    enriched.sort((a,b) => {
+      const cmp = a.roastDate - b.roastDate;
+      return sortDir === 'desc' ? -cmp : cmp;
+    });
   } else {
     const field = fieldMap[sortBy] || 'name';
     enriched.sort((a,b) => {
