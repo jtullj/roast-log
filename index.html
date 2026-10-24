@@ -194,7 +194,7 @@
       <option value="country">Sort: country</option>
       <option value="variety">Sort: variety</option>
       <option value="name">Sort: name</option>
-      <option value="roastDate">Sort: roast date</option>
+      <option value="roastDate" selected>Sort: roast date</option>
     </select>
     <select class="sort-dir" id="sortDir">
       <option value="asc">A → Z</option>
@@ -602,7 +602,7 @@ let showClosedOnly = false;
 let showFrozenOnly = false;
 let showLeftovers = false;
 let searchQuery = '';
-let sortBy = 'rest';
+let sortBy = 'roastDate';
 let sortDir = 'asc';
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -784,7 +784,14 @@ document.getElementById('sortDir').addEventListener('change', (e) => {
   sortDir = e.target.value;
   render();
 });
-document.getElementById('sortDir').style.display = 'none';
+(function initSortControls(){
+  const sel = document.getElementById('sortSelect'); sel.value = sortBy;
+  const dirSel = document.getElementById('sortDir');
+  dirSel.style.display = sortBy === 'rest' ? 'none' : '';
+  dirSel.options[0].textContent = sortBy === 'roastDate' ? 'oldest first' : 'A → Z';
+  dirSel.options[1].textContent = sortBy === 'roastDate' ? 'newest first' : 'Z → A';
+  dirSel.value = sortDir;
+})();
 let resizeTimer = null;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(render, 150); });
 
