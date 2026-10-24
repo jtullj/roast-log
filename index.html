@@ -110,13 +110,13 @@
   .row{display:grid;grid-template-columns:minmax(260px,360px) 1fr 122px;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line);}
   .row:first-child{border-top:none;}
   .row.is-archived{opacity:0.45;}
-  .finished-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;}
-  .frozen-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--today);background:var(--surface-2);border:1px solid var(--today);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;}
+  .finished-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;display:inline-block;line-height:1.3;vertical-align:middle;}
+  .frozen-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--today);background:var(--surface-2);border:1px solid var(--today);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;display:inline-block;line-height:1.3;vertical-align:middle;}
   .frozen-grams{color:var(--today);font-weight:600;white-space:nowrap;margin-left:6px;}
   .btn.primary#toggleArchived{background:var(--text);color:var(--surface);border-color:var(--text);}
   .btn.primary#toggleOpenedOnly{background:var(--text);color:var(--surface);border-color:var(--text);}
   .bean{min-width:0;}
-  .bean-name{font-family:'Fraunces',serif;font-weight:600;font-size:14.5px;color:var(--text);white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;}
+  .bean-name{font-family:'Fraunces',serif;font-weight:600;font-size:14.5px;color:var(--text);white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;line-height:1.5;}
   .bean-meta{font-size:10px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
   .bean-meta.bean-rest{white-space:normal;overflow:visible;text-overflow:clip;}
   .bean-meta.bean-masl{color:var(--today);font-weight:600;white-space:normal;overflow:visible;text-overflow:clip;}
