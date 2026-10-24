@@ -239,6 +239,7 @@
       <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_frozen"> frozen</label></div>
       <div class="field"><label>Frozen, g</label><input type="number" step="0.5" min="0" id="f_frozengrams" placeholder="e.g. 40"></div>
       <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_frozenonly"> only frozen left</label></div>
+      <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_stillopen"> frozen, but also open (in use)</label></div>
       <div class="field span2"><label>Notes</label><input id="f_notes" placeholder="profile, source, etc."></div>
     </div>
     <div class="hint">If there's already a default rest for this roaster, the weeks will auto-fill — you can still adjust them.</div>
@@ -579,7 +580,14 @@ const pendingPatches = [
   { id:"patch_frozen_p88_20261024", targetId:"p88", set:{ frozen:true, frozenGrams:47.2, frozenOnly:true, notes:"Keramo, Sidama. First year buying from Mate Matiwos, who has only been separating and selling his coffee for a couple of years. Variety 74158 (JARC selection released 1979, out of the Metu Bishari Selections, Illuababora zone). Honey: hand-picked, floated, de-pulped as quickly as possible while intentionally leaving on a small amount of mucilage, dried on shaded beds with mucilage intact to ~10% moisture. Harvest Jan 2026. berries/tropical fruit/bergamot. 47,2g frozen 24.10.2026" } },
   { id:"patch_frozen_p38_20261024", targetId:"p38", set:{ frozen:true, frozenGrams:30, notes:"Region Guji, Oddo Shakisso, village Benti Korba. Washing station Sewda, lot Sewda Premium. Selected from a 28-lot cupping during Testi's 2026 origin trip. Harvest Dec 2025–Jan 2026. magnolia/honey peach/bergamot/lime/watermelon juice. 30g frozen 24.10.2026" } },
   { id:"patch_frozen_p78_20261024", targetId:"p78", set:{ frozen:true, frozenGrams:65.9, notes:"Guji. Second year working with this lot — separated from some of Guji's highest elevations; Sike Bokasso has no washing station of its own, so the coffee is processed and dried at the Halo Hartume site in neighboring Gedeb (exporting partner SNAP, contact Tim Hill). Hand-picked, floated, held in-cherry 12h in shade, de-pulped, dry-fermented 12h in plastic barrels, wet-fermented an additional 12h, hand-washed to remove mucilage, shade-dried to ~10% moisture. Harvest Jan 2026. watermelon/peach/lemongrass. Weight assumed 250g — not stated on the page, correct if different. 65,9g frozen 24.10.2026" } },
-  { id:"patch_open_p57_20261024", targetId:"p57", set:{ openDate:"2026-10-24" } }
+  { id:"patch_open_p57_20261024", targetId:"p57", set:{ openDate:"2026-10-24" } },
+  { id:"patch_stillopen_p10", targetId:"p10", set:{ stillOpen:true } },
+  { id:"patch_stillopen_p41", targetId:"p41", set:{ stillOpen:true } },
+  { id:"patch_stillopen_p57", targetId:"p57", set:{ stillOpen:true } },
+  { id:"patch_stillopen_p58", targetId:"p58", set:{ stillOpen:true } },
+  { id:"patch_stillopen_p78", targetId:"p78", set:{ stillOpen:true } },
+  { id:"patch_stillopen_p80", targetId:"p80", set:{ stillOpen:true } },
+  { id:"patch_stillopen_p38", targetId:"p38", set:{ stillOpen:true } }
 ];
 
 const DAY = 86400000;
@@ -690,6 +698,7 @@ function openForm(bean){
   document.getElementById('f_frozen').checked = bean ? !!bean.frozen : false;
   document.getElementById('f_frozengrams').value = bean && bean.frozenGrams != null ? bean.frozenGrams : '';
   document.getElementById('f_frozenonly').checked = bean ? !!bean.frozenOnly : false;
+  document.getElementById('f_stillopen').checked = bean ? !!bean.stillOpen : false;
   document.getElementById('f_notes').value = bean ? (bean.notes||'') : '';
   document.getElementById('f_setdefault').checked = false;
   document.getElementById('addPanel').classList.add('open');
@@ -811,6 +820,7 @@ document.getElementById('saveBean').addEventListener('click', async () => {
     frozen: document.getElementById('f_frozen').checked,
     frozenGrams: (document.getElementById('f_frozen').checked && document.getElementById('f_frozengrams').value) ? parseFloat(document.getElementById('f_frozengrams').value) : null,
     frozenOnly: document.getElementById('f_frozen').checked && document.getElementById('f_frozenonly').checked,
+    stillOpen: document.getElementById('f_frozen').checked && document.getElementById('f_stillopen').checked && !document.getElementById('f_frozenonly').checked,
     notes: document.getElementById('f_notes').value.trim()
   };
   if(editingId){
@@ -885,7 +895,7 @@ async function toggleFrozen(id){
   const b = beans.find(x => x.id === id);
   if(!b) return;
   b.frozen = !b.frozen;
-  if(!b.frozen){ b.frozenGrams = null; b.frozenOnly = false; }
+  if(!b.frozen){ b.frozenGrams = null; b.frozenOnly = false; b.stillOpen = false; }
   await saveBeans();
   render();
 }
@@ -921,7 +931,7 @@ function render(){
   document.getElementById('toggleFrozenLeftovers').innerHTML = `🧊 ${showLeftovers ? 'Hide' : 'Show'} frozen leftovers (<span id="leftoverCount">${leftoverCount}</span>)`;
   const archivedFiltered = (showLeftovers || showFrozenOnly) ? archivedFiltered0 : archivedFiltered0.filter(b => !isLeftover(b));
 
-  const openedCount = archivedFiltered.filter(b => b.openDate && !b.frozen).length;
+  const openedCount = archivedFiltered.filter(b => b.openDate && (!b.frozen || b.stillOpen)).length;
   document.getElementById('toggleOpenedOnly').innerHTML = `📦 Only opened (<span id="openedCount">${openedCount}</span>)`;
 
   const closedCount = archivedFiltered.filter(b => !b.openDate).length;
@@ -930,7 +940,7 @@ function render(){
   const frozenCount = archivedFiltered0.filter(b => b.frozen).length;
   document.getElementById('toggleFrozenOnly').innerHTML = `❄ Only frozen (<span id="frozenCount">${frozenCount}</span>)`;
 
-  const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate && !b.frozen)
+  const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate && (!b.frozen || b.stillOpen))
     : showClosedOnly ? archivedFiltered.filter(b => !b.openDate)
     : showFrozenOnly ? archivedFiltered.filter(b => b.frozen)
     : archivedFiltered;
