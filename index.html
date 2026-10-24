@@ -180,6 +180,7 @@
     <button class="btn" id="toggleOpenedOnly">📦 Only opened (<span id="openedCount">0</span>)</button>
     <button class="btn" id="toggleClosedOnly">🔒 Only closed (<span id="closedCount">0</span>)</button>
     <button class="btn" id="toggleFrozenOnly">❄ Only frozen (<span id="frozenCount">0</span>)</button>
+    <button class="btn" id="toggleFrozenLeftovers">🧊 Show frozen leftovers (<span id="leftoverCount">0</span>)</button>
   </div>
 
   <div class="searchbar">
@@ -237,6 +238,7 @@
       <div class="field"><label>Opened (opt.)</label><input type="date" id="f_opendate"></div>
       <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_frozen"> frozen</label></div>
       <div class="field"><label>Frozen, g</label><input type="number" step="0.5" min="0" id="f_frozengrams" placeholder="e.g. 40"></div>
+      <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_frozenonly"> only frozen left</label></div>
       <div class="field span2"><label>Notes</label><input id="f_notes" placeholder="profile, source, etc."></div>
     </div>
     <div class="hint">If there's already a default rest for this roaster, the weeks will auto-fill — you can still adjust them.</div>
@@ -559,7 +561,17 @@ const pendingPatches = [
   { id:"patch_open_p77_20260924", targetId:"p77", set:{ openDate:"2026-09-24" } },
   { id:"patch_weight_p77_125", targetId:"p77", set:{ weight:125 } },
   { id:"patch_open_p80_20260924", targetId:"p80", set:{ openDate:"2026-09-24" } },
-  { id:"patch_weight_p80_125", targetId:"p80", set:{ weight:125 } }
+  { id:"patch_weight_p80_125", targetId:"p80", set:{ weight:125 } },
+  { id:"patch_open_p38_20261024", targetId:"p38", set:{ openDate:"2026-10-24" } },
+  { id:"patch_open_p54_20261022", targetId:"p54", set:{ openDate:"2026-10-22" } },
+  { id:"patch_finish_p30", targetId:"p30", set:{ archived:true } },
+  { id:"patch_finish_p8", targetId:"p8", set:{ archived:true } },
+  { id:"patch_finish_p9", targetId:"p9", set:{ archived:true } },
+  { id:"patch_finish_p44", targetId:"p44", set:{ archived:true } },
+  { id:"patch_frozenonly_p36", targetId:"p36", set:{ frozenOnly:true } },
+  { id:"patch_frozenonly_p14", targetId:"p14", set:{ frozenOnly:true } },
+  { id:"patch_frozenonly_p4", targetId:"p4", set:{ frozenOnly:true } },
+  { id:"patch_frozenonly_p70", targetId:"p70", set:{ frozenOnly:true } }
 ];
 
 const DAY = 86400000;
@@ -572,6 +584,7 @@ let showArchived = false;
 let showOpenedOnly = false;
 let showClosedOnly = false;
 let showFrozenOnly = false;
+let showLeftovers = false;
 let searchQuery = '';
 let sortBy = 'rest';
 let sortDir = 'asc';
@@ -668,6 +681,7 @@ function openForm(bean){
   document.getElementById('f_opendate').value = bean ? toISODate(bean.openDate) : '';
   document.getElementById('f_frozen').checked = bean ? !!bean.frozen : false;
   document.getElementById('f_frozengrams').value = bean && bean.frozenGrams != null ? bean.frozenGrams : '';
+  document.getElementById('f_frozenonly').checked = bean ? !!bean.frozenOnly : false;
   document.getElementById('f_notes').value = bean ? (bean.notes||'') : '';
   document.getElementById('f_setdefault').checked = false;
   document.getElementById('addPanel').classList.add('open');
@@ -721,6 +735,12 @@ document.getElementById('toggleFrozenOnly').addEventListener('click', () => {
   document.getElementById('toggleFrozenOnly').classList.toggle('primary', showFrozenOnly);
   document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
   document.getElementById('toggleClosedOnly').classList.toggle('primary', showClosedOnly);
+  render();
+});
+
+document.getElementById('toggleFrozenLeftovers').addEventListener('click', () => {
+  showLeftovers = !showLeftovers;
+  document.getElementById('toggleFrozenLeftovers').classList.toggle('primary', showLeftovers);
   render();
 });
 
@@ -782,6 +802,7 @@ document.getElementById('saveBean').addEventListener('click', async () => {
     openDate: document.getElementById('f_opendate').value,
     frozen: document.getElementById('f_frozen').checked,
     frozenGrams: (document.getElementById('f_frozen').checked && document.getElementById('f_frozengrams').value) ? parseFloat(document.getElementById('f_frozengrams').value) : null,
+    frozenOnly: document.getElementById('f_frozen').checked && document.getElementById('f_frozenonly').checked,
     notes: document.getElementById('f_notes').value.trim()
   };
   if(editingId){
@@ -856,7 +877,7 @@ async function toggleFrozen(id){
   const b = beans.find(x => x.id === id);
   if(!b) return;
   b.frozen = !b.frozen;
-  if(!b.frozen) b.frozenGrams = null;
+  if(!b.frozen){ b.frozenGrams = null; b.frozenOnly = false; }
   await saveBeans();
   render();
 }
@@ -886,7 +907,11 @@ function render(){
   const archivedCount = beans.filter(b => b.archived).length;
   document.getElementById('toggleArchived').innerHTML = `☕ ${showArchived ? 'Hide' : 'Show'} finished (<span id="archivedCount">${archivedCount}</span>)`;
 
-  const archivedFiltered = showArchived ? beans : beans.filter(b => !b.archived);
+  const archivedFiltered0 = showArchived ? beans : beans.filter(b => !b.archived);
+  const isLeftover = b => b.frozen && b.frozenOnly;
+  const leftoverCount = archivedFiltered0.filter(isLeftover).length;
+  document.getElementById('toggleFrozenLeftovers').innerHTML = `🧊 ${showLeftovers ? 'Hide' : 'Show'} frozen leftovers (<span id="leftoverCount">${leftoverCount}</span>)`;
+  const archivedFiltered = (showLeftovers || showFrozenOnly) ? archivedFiltered0 : archivedFiltered0.filter(b => !isLeftover(b));
 
   const openedCount = archivedFiltered.filter(b => b.openDate && !b.frozen).length;
   document.getElementById('toggleOpenedOnly').innerHTML = `📦 Only opened (<span id="openedCount">${openedCount}</span>)`;
@@ -894,7 +919,7 @@ function render(){
   const closedCount = archivedFiltered.filter(b => !b.openDate).length;
   document.getElementById('toggleClosedOnly').innerHTML = `🔒 Only closed (<span id="closedCount">${closedCount}</span>)`;
 
-  const frozenCount = archivedFiltered.filter(b => b.frozen).length;
+  const frozenCount = archivedFiltered0.filter(b => b.frozen).length;
   document.getElementById('toggleFrozenOnly').innerHTML = `❄ Only frozen (<span id="frozenCount">${frozenCount}</span>)`;
 
   const openedFiltered = showOpenedOnly ? archivedFiltered.filter(b => b.openDate && !b.frozen)
