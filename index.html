@@ -34,7 +34,7 @@
     padding:32px 24px 56px;
     min-height:100vh;
   }
-  .wrap{max-width:960px;margin:0 auto;}
+  .wrap{max-width:1600px;margin:0 auto;}
   header{
     display:flex; justify-content:space-between; align-items:flex-end;
     border-bottom:1px solid var(--line); padding-bottom:16px; margin-bottom:20px;
@@ -107,7 +107,7 @@
   .sw-past{border:1px dashed var(--past);background:transparent;}
 
   .chart{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 20px 6px;}
-  .row{display:grid;grid-template-columns:200px 1fr 122px;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line);}
+  .row{display:grid;grid-template-columns:minmax(260px,360px) 1fr 122px;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line);}
   .row:first-child{border-top:none;}
   .row.is-archived{opacity:0.45;}
   .finished-badge{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;}
@@ -116,7 +116,7 @@
   .btn.primary#toggleArchived{background:var(--text);color:var(--surface);border-color:var(--text);}
   .btn.primary#toggleOpenedOnly{background:var(--text);color:var(--surface);border-color:var(--text);}
   .bean{min-width:0;}
-  .bean-name{font-family:'Fraunces',serif;font-weight:600;font-size:14.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bean-name{font-family:'Fraunces',serif;font-weight:600;font-size:14.5px;color:var(--text);white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;}
   .bean-meta{font-size:10px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
   .bean-meta.bean-rest{white-space:normal;overflow:visible;text-overflow:clip;}
   .bean-meta.bean-masl{color:var(--today);font-weight:600;white-space:normal;overflow:visible;text-overflow:clip;}
@@ -145,7 +145,7 @@
   .today-line{position:absolute;top:0;width:1.5px;background:var(--today);}
   .today-line::before{content:'TODAY';position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8.5px;letter-spacing:.06em;color:var(--today);white-space:nowrap;}
 
-  .axis{display:grid;grid-template-columns:200px 1fr 122px;gap:14px;padding-top:8px;margin-top:2px;border-top:1px solid var(--line);}
+  .axis{display:grid;grid-template-columns:minmax(260px,360px) 1fr 122px;gap:14px;padding-top:8px;margin-top:2px;border-top:1px solid var(--line);}
   .axis-track{position:relative;height:16px;}
   .axis-tick{position:absolute;top:0;font-size:9px;color:var(--text-faint);transform:translateX(-50%);}
 
@@ -785,6 +785,8 @@ document.getElementById('sortDir').addEventListener('change', (e) => {
   render();
 });
 document.getElementById('sortDir').style.display = 'none';
+let resizeTimer = null;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(render, 150); });
 
 document.getElementById('f_roaster').addEventListener('change', (e) => {
   const def = roasterDefaults[e.target.value.trim()];
