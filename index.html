@@ -170,6 +170,7 @@
   .bean-card .card-sub{font-size:12px;color:var(--text-dim);margin-bottom:14px;}
   .bean-card .card-close{position:absolute;right:12px;top:10px;border:none;background:none;font-size:20px;color:var(--text-faint);cursor:pointer;padding:4px 8px;}
   .bean-card .card-close:hover{color:var(--text);}
+  .card-desc{font-family:'Fraunces',serif;font-style:italic;font-size:16px;line-height:1.45;color:var(--ready-fill);margin:0 0 14px;}
   .card-badges{margin-bottom:12px;}
   .card-grid{display:grid;grid-template-columns:130px 1fr;gap:7px 14px;font-size:13px;border-top:1px solid var(--line);padding-top:12px;}
   .card-grid dt{color:var(--text-faint);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px;}
@@ -257,6 +258,7 @@
       <div class="field"><label>Frozen, g</label><input type="number" step="0.5" min="0" id="f_frozengrams" placeholder="e.g. 40"></div>
       <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_frozenonly"> only frozen left</label></div>
       <div class="field"><label class="checkbox-row" style="margin-top:22px;"><input type="checkbox" id="f_stillopen"> frozen, but also open (in use)</label></div>
+      <div class="field span2"><label>Descriptors (tasting notes)</label><input id="f_descriptors" placeholder="peach/jasmine/black tea"></div>
       <div class="field span2"><label>Notes</label><input id="f_notes" placeholder="profile, source, etc."></div>
     </div>
     <div class="hint">If there's already a default rest for this roaster, the weeks will auto-fill — you can still adjust them.</div>
@@ -636,7 +638,104 @@ const pendingPatches = [
   { id:"patch_stillopen_p51", targetId:"p51", set:{ stillOpen:true } },
   { id:"patch_stillopen_p50", targetId:"p50", set:{ stillOpen:true } },
   { id:"patch_stillopen_p49", targetId:"p49", set:{ stillOpen:true } },
-  { id:"patch_stillopen_p47", targetId:"p47", set:{ stillOpen:true } }
+  { id:"patch_stillopen_p47", targetId:"p47", set:{ stillOpen:true } },
+  { id:"patch_desc_p1", targetId:"p1", set:{ descriptors:"peach/lemon/jasmine/black tea" } },
+  { id:"patch_desc_p2", targetId:"p2", set:{ descriptors:"white flowers/stone fruits/lemon zest" } },
+  { id:"patch_desc_p3", targetId:"p3", set:{ descriptors:"mangosteen/passionfruit/creamy/raspberry/hibiscus" } },
+  { id:"patch_desc_p4", targetId:"p4", set:{ descriptors:"dried apricot/white flowers/jasmine/citrus/black tea" } },
+  { id:"patch_desc_p5", targetId:"p5", set:{ descriptors:"stone fruits/bergamot/black tea/citrus" } },
+  { id:"patch_desc_p6", targetId:"p6", set:{ descriptors:"stone fruit/tea-like/creamy/oolong/lemon" } },
+  { id:"patch_desc_p7", targetId:"p7", set:{ descriptors:"winey/ripe red berries/tropical fruits" } },
+  { id:"patch_desc_p8", targetId:"p8", set:{ descriptors:"winey/red fruits/floral" } },
+  { id:"patch_desc_p9", targetId:"p9", set:{ descriptors:"floral/white tea/stone fruits" } },
+  { id:"patch_desc_p10", targetId:"p10", set:{ descriptors:"rose hips/hibiscus/red berries" } },
+  { id:"patch_desc_p11", targetId:"p11", set:{ descriptors:"oolong/raspberry/lychee" } },
+  { id:"patch_desc_p12", targetId:"p12", set:{ descriptors:"white tea/pink grapefruit/floral" } },
+  { id:"patch_desc_p13", targetId:"p13", set:{ descriptors:"jasmine/bergamot/black tea" } },
+  { id:"patch_desc_p14", targetId:"p14", set:{ descriptors:"blackcurrant/tamarillo/brown sugar" } },
+  { id:"patch_desc_p15", targetId:"p15", set:{ descriptors:"earl grey/lemon/honey" } },
+  { id:"patch_desc_p16", targetId:"p16", set:{ descriptors:"lime/lavender/peach/tropical fruit, bright citrus acidity, floral/lactic" } },
+  { id:"patch_desc_p17", targetId:"p17", set:{ descriptors:"apricot yoghurt/orange zest/green apple/yuzu/mandarin/earl grey/mango/chamomile, as it cools — orange blossom/lilac/granadilla" } },
+  { id:"patch_desc_p18", targetId:"p18", set:{ descriptors:"tropical (pineapple/mango), floral, creamy body, brown sugar aftertaste; citrus and berries as it cools" } },
+  { id:"patch_desc_p19", targetId:"p19", set:{ descriptors:"raspberry/hibiscus/nectarine/candy; ripe cherry, mellow tartaric acidity, silky tea-like finish" } },
+  { id:"patch_desc_p20", targetId:"p20", set:{ descriptors:"lemon zest/pinot noir/raspberry jam/hibiscus/cassis/light caramel" } },
+  { id:"patch_desc_p21", targetId:"p21", set:{ descriptors:"crisp/green apple/white tea floral, smooth citric acidity, stone fruit, vanilla-like finish" } },
+  { id:"patch_desc_p22", targetId:"p22", set:{ descriptors:"mangosteen/lime/apricot" } },
+  { id:"patch_desc_p23", targetId:"p23", set:{ descriptors:"citrus/lemon zest/red plum/raspberry" } },
+  { id:"patch_desc_p24", targetId:"p24", set:{ descriptors:"mango/jasmine/lychee" } },
+  { id:"patch_desc_p25", targetId:"p25", set:{ descriptors:"peach/lemon zest/wildflower honey" } },
+  { id:"patch_desc_p26", targetId:"p26", set:{ descriptors:"ripe peach/watermelon/sweet tea" } },
+  { id:"patch_desc_p27", targetId:"p27", set:{ descriptors:"mulberry/peach/lemon" } },
+  { id:"patch_desc_p28", targetId:"p28", set:{ descriptors:"dark fruit/rose hips/lemon" } },
+  { id:"patch_desc_p29", targetId:"p29", set:{ descriptors:"watermelon/white florals/raspberry" } },
+  { id:"patch_desc_p30", targetId:"p30", set:{ descriptors:"apple blossom/cherry/key lime" } },
+  { id:"patch_desc_p31", targetId:"p31", set:{ descriptors:"cherry/blood orange/tamarind" } },
+  { id:"patch_desc_p32", targetId:"p32", set:{ descriptors:"blackberry/rhubarb/orange" } },
+  { id:"patch_desc_p33", targetId:"p33", set:{ descriptors:"deep yellow tropical fruit/florals, Sidra brightness" } },
+  { id:"patch_desc_p34", targetId:"p34", set:{ descriptors:"citrus, sweet structure, louder florality than Cruz Pata — perfumed bouquet" } },
+  { id:"patch_desc_p35", targetId:"p35", set:{ descriptors:"strawberry and cream, more complex than the washed lot" } },
+  { id:"patch_desc_p36", targetId:"p36", set:{ descriptors:"floral/lemon/peach/shine muscat grape" } },
+  { id:"patch_desc_p37", targetId:"p37", set:{ descriptors:"raspberry candy/blackcurrant/mixed berries" } },
+  { id:"patch_desc_p38", targetId:"p38", set:{ descriptors:"magnolia/honey peach/bergamot/lime/watermelon juice" } },
+  { id:"patch_desc_p39", targetId:"p39", set:{ descriptors:"roselle/apricot/grape juice" } },
+  { id:"patch_desc_p40", targetId:"p40", set:{ descriptors:"lychee/green grape/vanilla/bergamot/orange candy" } },
+  { id:"patch_desc_p41", targetId:"p41", set:{ descriptors:"red currant/rose hips/hibiscus" } },
+  { id:"patch_desc_p42", targetId:"p42", set:{ descriptors:"watermelon/peach rings/white florals/citrus" } },
+  { id:"patch_desc_p43", targetId:"p43", set:{ descriptors:"high aromatics, fruit layers with good clarity, chocolate-like sweetness" } },
+  { id:"patch_desc_p44", targetId:"p44", set:{ descriptors:"star fruit/peach/honeydew/florals" } },
+  { id:"patch_desc_p45", targetId:"p45", set:{ descriptors:"rooibos/candied grapefruit/blackcurrant" } },
+  { id:"patch_desc_p46", targetId:"p46", set:{ descriptors:"kiwi/orange blossom/guava" } },
+  { id:"patch_desc_p47", targetId:"p47", set:{ descriptors:"cranberry/raspberry/rose hips" } },
+  { id:"patch_desc_p48", targetId:"p48", set:{ descriptors:"lemon zest/peach/wild strawberry" } },
+  { id:"patch_desc_p49", targetId:"p49", set:{ descriptors:"peach candy/lemon zest/florality" } },
+  { id:"patch_desc_p50", targetId:"p50", set:{ descriptors:"lychee/plum/wildflower honey" } },
+  { id:"patch_desc_p51", targetId:"p51", set:{ descriptors:"strawberry jam/eucalyptus/lemon tea" } },
+  { id:"patch_desc_p52", targetId:"p52", set:{ descriptors:"Orangina/oleo-saccharum/neroli, citrus, pink peppercorn, violets, jasmine" } },
+  { id:"patch_desc_p53", targetId:"p53", set:{ descriptors:"Rose turkish delight/overripe raspberry, white chocolate milkshake, raspberry jam, pink marshmallow, dried mango; tropical/kriek-lambic as it cools" } },
+  { id:"patch_desc_p54", targetId:"p54", set:{ descriptors:"Cherry (Kriek) lambic sour, tinned pineapple, passionfruit kombucha, ripe mango, vanilla, black tea finish" } },
+  { id:"patch_desc_p55", targetId:"p55", set:{ descriptors:"Buttery stewed fruits, brûléed grapefruit, purple grape juice, blackcurrant jam, dark honey, cola-bottle finish" } },
+  { id:"patch_desc_p56", targetId:"p56", set:{ descriptors:"mirtillo (blueberry), uvetta (raisin), viola (violet), pesca (peach)" } },
+  { id:"patch_desc_p57", targetId:"p57", set:{ descriptors:"blackcurrants/blackberries/raisins" } },
+  { id:"patch_desc_p58", targetId:"p58", set:{ descriptors:"raspberry/cherry/wild roses, sangria, ruby grapefruit, citric medley" } },
+  { id:"patch_desc_p59", targetId:"p59", set:{ descriptors:"strawberry/pear/nectarine/floral, tea-like body" } },
+  { id:"patch_desc_p61", targetId:"p61", set:{ descriptors:"plum juice/blackberry/preserved plum candy/mango" } },
+  { id:"patch_desc_p62", targetId:"p62", set:{ descriptors:"golden plum/yellow cherry/nectarine/starfruit — clean, balanced, tropical-forward natural" } },
+  { id:"patch_desc_p63", targetId:"p63", set:{ descriptors:"rhubarb/cranberry/raspberry/hibiscus" } },
+  { id:"patch_desc_p64", targetId:"p64", set:{ descriptors:"blackcurrant/stone fruits/hibiscus/grape" } },
+  { id:"patch_desc_p65", targetId:"p65", set:{ descriptors:"mango/rose/peach/hibiscus/bergamot" } },
+  { id:"patch_desc_p66", targetId:"p66", set:{ descriptors:"red fruits/berries/aprium" } },
+  { id:"patch_desc_p67", targetId:"p67", set:{ descriptors:"orange blossom/mandarin/cooked pear" } },
+  { id:"patch_desc_p68", targetId:"p68", set:{ descriptors:"hibiscus/grapefruit/currants" } },
+  { id:"patch_desc_p69", targetId:"p69", set:{ descriptors:"hibiscus/grapefruit/currants" } },
+  { id:"patch_desc_p70", targetId:"p70", set:{ descriptors:"kiwi/orange blossom/guava" } },
+  { id:"patch_desc_p71", targetId:"p71", set:{ descriptors:"kiwi/orange blossom/guava" } },
+  { id:"patch_desc_p72", targetId:"p72", set:{ descriptors:"star fruit/peach/honeydew/florals" } },
+  { id:"patch_desc_p73", targetId:"p73", set:{ descriptors:"watermelon/peach rings/white florals/citrus" } },
+  { id:"patch_desc_p74", targetId:"p74", set:{ descriptors:"bergamot/watermelon/peach" } },
+  { id:"patch_desc_p75", targetId:"p75", set:{ descriptors:"candied pomelo/berries/fig" } },
+  { id:"patch_desc_p76", targetId:"p76", set:{ descriptors:"yellow tropical fruit/strawberry, soft lifting acidity" } },
+  { id:"patch_desc_p77", targetId:"p77", set:{ descriptors:"plum/mulberry/candied lemon" } },
+  { id:"patch_desc_p78", targetId:"p78", set:{ descriptors:"watermelon/peach/lemongrass" } },
+  { id:"patch_desc_p79", targetId:"p79", set:{ descriptors:"melon/lime — softer, complex tropical profile" } },
+  { id:"patch_desc_p80", targetId:"p80", set:{ descriptors:"pineapple/Earl Grey tea/jasmine" } },
+  { id:"patch_desc_p81", targetId:"p81", set:{ descriptors:"orange/currant/cherry, dehydrated berries, baking spices, juicy black cherry finish" } },
+  { id:"patch_desc_p82", targetId:"p82", set:{ descriptors:"white nectarine/silky berries/floral, peach, sweet tea" } },
+  { id:"patch_desc_p83", targetId:"p83", set:{ descriptors:"wildflower honey/citrus/golden grapes, orange, melon, concord grape, yellow cherry" } },
+  { id:"patch_desc_p84", targetId:"p84", set:{ descriptors:"nectarine/brown sugar, rosehip tea florals as it cools" } },
+  { id:"patch_desc_p85", targetId:"p85", set:{ descriptors:"blackcurrant/white peach, lively (from the bag)" } },
+  { id:"patch_desc_p88", targetId:"p88", set:{ descriptors:"berries/tropical fruit/bergamot" } },
+  { id:"patch_desc_p89", targetId:"p89", set:{ descriptors:"berries/tropical fruit/bergamot" } },
+  { id:"patch_desc_p90", targetId:"p90", set:{ descriptors:"hibiscus/blueberry/finger lime" } },
+  { id:"patch_desc_p91", targetId:"p91", set:{ descriptors:"hibiscus/blueberry/finger lime" } },
+  { id:"patch_desc_p92", targetId:"p92", set:{ descriptors:"pineapple/mango/hops" } },
+  { id:"patch_desc_p93", targetId:"p93", set:{ descriptors:"peach blossom/nectarine/lemon" } },
+  { id:"patch_desc_p94", targetId:"p94", set:{ descriptors:"Key lime/raspberry/lychee" } },
+  { id:"patch_desc_p95", targetId:"p95", set:{ descriptors:"rose hips/candied orange/currants" } },
+  { id:"patch_desc_p96", targetId:"p96", set:{ descriptors:"rose hips/candied orange/currants" } },
+  { id:"patch_desc_p97", targetId:"p97", set:{ descriptors:"watermelon/peach/lemongrass" } },
+  { id:"patch_desc_p98", targetId:"p98", set:{ descriptors:"raspberry tea/lemon zest/mulberry" } },
+  { id:"patch_desc_p99", targetId:"p99", set:{ descriptors:"honeydew/peach/coffee blossom" } },
+  { id:"patch_desc_p100", targetId:"p100", set:{ descriptors:"rose hips/tangerine/mulberry" } }
 ];
 
 const DAY = 86400000;
@@ -659,6 +758,14 @@ function addDays(d, days){ return new Date(d.getTime() + days*DAY); }
 function fmt(d){ return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short'}); }
 function parseDate(s){ return new Date(s + 'T00:00:00'); }
 
+function notesWithoutDesc(b){
+  let n = b.notes || '';
+  const d = (b.descriptors || '').trim();
+  if(d && n.includes(d)){
+    n = n.replace(d + '.', '').replace(d, '').replace(/\s{2,}/g, ' ').trim();
+  }
+  return n;
+}
 function escHtml(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtFull(d){ return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
 function showCard(b){
@@ -694,8 +801,9 @@ function showCard(b){
     <h2>${escHtml(b.name)}</h2>
     <div class="card-sub">${escHtml([b.roaster,b.country].filter(Boolean).join(' · '))}</div>
     ${badges ? `<div class="card-badges">${badges}</div>` : ''}
+    ${b.descriptors ? `<div class="card-desc">${escHtml(b.descriptors)}</div>` : ''}
     <dl class="card-grid" style="margin:0">${rows.join('')}</dl>
-    ${b.notes ? `<div class="card-notes">${escHtml(b.notes)}</div>` : ''}
+    ${notesWithoutDesc(b) ? `<div class="card-notes">${escHtml(notesWithoutDesc(b))}</div>` : ''}
     <div class="card-actions"><button class="btn" id="cardEdit">Edit</button></div>`;
   document.getElementById('cardClose').addEventListener('click', hideCard);
   document.getElementById('cardEdit').addEventListener('click', () => { hideCard(); openForm(beans.find(x => x.id === b.id) || b); });
@@ -795,7 +903,8 @@ function openForm(bean){
   document.getElementById('f_frozengrams').value = bean && bean.frozenGrams != null ? bean.frozenGrams : '';
   document.getElementById('f_frozenonly').checked = bean ? !!bean.frozenOnly : false;
   document.getElementById('f_stillopen').checked = bean ? !!bean.stillOpen : false;
-  document.getElementById('f_notes').value = bean ? (bean.notes||'') : '';
+  document.getElementById('f_descriptors').value = bean ? (bean.descriptors||'') : '';
+  document.getElementById('f_notes').value = bean ? notesWithoutDesc(bean) : '';
   document.getElementById('f_setdefault').checked = false;
   document.getElementById('addPanel').classList.add('open');
   document.getElementById('roasterPanel').classList.remove('open');
@@ -926,6 +1035,7 @@ document.getElementById('saveBean').addEventListener('click', async () => {
     frozenGrams: (document.getElementById('f_frozen').checked && document.getElementById('f_frozengrams').value) ? parseFloat(document.getElementById('f_frozengrams').value) : null,
     frozenOnly: document.getElementById('f_frozen').checked && document.getElementById('f_frozenonly').checked,
     stillOpen: document.getElementById('f_frozen').checked && document.getElementById('f_stillopen').checked && !document.getElementById('f_frozenonly').checked,
+    descriptors: document.getElementById('f_descriptors').value.trim(),
     notes: document.getElementById('f_notes').value.trim()
   };
   if(editingId){
@@ -1051,7 +1161,7 @@ function render(){
     : archivedFiltered;
 
   const visibleBeans = searchQuery ? openedFiltered.filter(b => {
-    const haystack = [b.roaster, b.name, b.country, b.variety, b.processing, b.roastLevel, b.notes]
+    const haystack = [b.roaster, b.name, b.country, b.variety, b.processing, b.roastLevel, b.descriptors, b.notes]
       .filter(Boolean).join(' ').toLowerCase();
     return haystack.includes(searchQuery);
   }) : openedFiltered;
