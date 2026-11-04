@@ -160,6 +160,23 @@
     .icon-btn{width:20px;height:20px;font-size:9.5px;}
     .row-actions{gap:4px;}
   }
+
+  .bean{cursor:pointer;}
+  .bean:hover .bean-name{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;}
+  .card-backdrop{position:fixed;inset:0;background:rgba(30,24,18,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;}
+  .card-backdrop.show{display:flex;}
+  .bean-card{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:22px 24px;box-shadow:0 12px 40px rgba(0,0,0,.25);position:relative;}
+  .bean-card h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin:0 28px 4px 0;line-height:1.25;}
+  .bean-card .card-sub{font-size:12px;color:var(--text-dim);margin-bottom:14px;}
+  .bean-card .card-close{position:absolute;right:12px;top:10px;border:none;background:none;font-size:20px;color:var(--text-faint);cursor:pointer;padding:4px 8px;}
+  .bean-card .card-close:hover{color:var(--text);}
+  .card-badges{margin-bottom:12px;}
+  .card-grid{display:grid;grid-template-columns:130px 1fr;gap:7px 14px;font-size:13px;border-top:1px solid var(--line);padding-top:12px;}
+  .card-grid dt{color:var(--text-faint);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px;}
+  .card-grid dd{margin:0;color:var(--text);}
+  .card-notes{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;font-size:13px;line-height:1.55;color:var(--text-dim);white-space:pre-wrap;}
+  .card-actions{margin-top:16px;display:flex;gap:8px;}
+  @media(max-width:640px){.card-grid{grid-template-columns:100px 1fr;}.bean-card{padding:18px 16px;}}
 </style>
 </head>
 <body>
@@ -276,6 +293,8 @@
 
 </div>
 
+
+<div class="card-backdrop" id="cardBackdrop"><div class="bean-card" id="beanCard" role="dialog" aria-modal="true"></div></div>
 <script>
 // ---- beans added via chat with Claude (I edit this array on request) ----
 const pendingImports = [
@@ -639,6 +658,53 @@ function uid(){ return Date.now().toString(36) + Math.random().toString(36).slic
 function addDays(d, days){ return new Date(d.getTime() + days*DAY); }
 function fmt(d){ return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short'}); }
 function parseDate(s){ return new Date(s + 'T00:00:00'); }
+
+function escHtml(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtFull(d){ return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}); }
+function showCard(b){
+  const t0 = new Date(); t0.setHours(0,0,0,0);
+  const rows = [];
+  const add = (k,v) => { if(v!==undefined && v!==null && v!=='') rows.push(`<dt>${k}</dt><dd>${v}</dd>`); };
+  add('Roaster', escHtml(b.roaster));
+  add('Country', escHtml(b.country));
+  add('Altitude', b.masl ? escHtml(b.masl)+' masl' : '');
+  add('Processing', escHtml(b.processing));
+  add('Variety', escHtml(b.variety));
+  add('Roast level', escHtml(b.roastLevel));
+  const dRoast = Math.round((t0-b.roastDate)/DAY);
+  add('Roasted', `${fmtFull(b.roastDate)} <span style="color:var(--text-faint)">· ${dRoast} days ago</span>`);
+  add('Best window', `${fmtFull(b.bestFrom)} – ${fmtFull(b.bestUntil)} <span style="color:var(--text-faint)">· ${b.bestFromWeeks}–${b.bestUntilWeeks} wk</span>`);
+  let st = '';
+  if(b.status==='resting') st = `resting, ${Math.round((b.bestFrom-t0)/DAY)} more days`;
+  else if(b.status==='ready') st = `in window, ${Math.round((b.bestUntil-t0)/DAY)} days left`;
+  else st = 'window closed';
+  add('Status', st);
+  add('Bag', b.weight ? b.weight+' g' : '');
+  if(b.openDate){
+    const od = parseDate(b.openDate);
+    add('Opened', `${fmtFull(od)} <span style="color:var(--text-faint)">· ${Math.round((t0-od)/DAY)} days ago</span>`);
+  }
+  if(b.frozen){
+    add('Frozen', b.frozenGrams!=null ? `<span class="frozen-grams" style="margin-left:0">❄ ${b.frozenGrams} g in freezer</span>` : '❄ yes (amount not recorded)');
+    if(b.stillOpen) add('', 'also still drinking from the open bag');
+  }
+  const badges = (b.archived ? '<span class="finished-badge">finished</span> ' : '') + (b.frozen ? '<span class="frozen-badge">frozen</span>' : '');
+  const card = document.getElementById('beanCard');
+  card.innerHTML = `<button class="card-close" id="cardClose" title="close">×</button>
+    <h2>${escHtml(b.name)}</h2>
+    <div class="card-sub">${escHtml([b.roaster,b.country].filter(Boolean).join(' · '))}</div>
+    ${badges ? `<div class="card-badges">${badges}</div>` : ''}
+    <dl class="card-grid" style="margin:0">${rows.join('')}</dl>
+    ${b.notes ? `<div class="card-notes">${escHtml(b.notes)}</div>` : ''}
+    <div class="card-actions"><button class="btn" id="cardEdit">Edit</button></div>`;
+  document.getElementById('cardClose').addEventListener('click', hideCard);
+  document.getElementById('cardEdit').addEventListener('click', () => { hideCard(); openForm(beans.find(x => x.id === b.id) || b); });
+  document.getElementById('cardBackdrop').classList.add('show');
+}
+function hideCard(){ document.getElementById('cardBackdrop').classList.remove('show'); }
+document.getElementById('cardBackdrop').addEventListener('click', e => { if(e.target.id==='cardBackdrop') hideCard(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') hideCard(); });
+
 function toISODate(v){
   if(!v) return '';
   if(v instanceof Date){
@@ -1051,6 +1117,9 @@ function render(){
       <div class="bean-meta bean-variety">${b.variety ? b.variety : ''}</div>
       <div class="bean-meta bean-weight">${b.weight ? b.weight+'g bag' : ''}${(b.frozen && b.frozenGrams != null) ? ' <span class="frozen-grams">❄ '+b.frozenGrams+'g frozen</span>' : ''}</div>
       <div class="bean-meta bean-rest">roasted ${fmt(b.roastDate)} · best from ${b.bestFromWeeks}wk / until ${b.bestUntilWeeks}wk</div>`;
+
+    bean.title = 'click for details';
+    bean.addEventListener('click', () => showCard(b));
 
     const track = document.createElement('div');
     track.className = 'track';
