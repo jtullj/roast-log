@@ -194,6 +194,7 @@
   <div class="toolbar">
     <button class="btn primary" id="toggleAddForm">+ Add bean</button>
     <button class="btn" id="toggleRoasterPanel">⚙ Roasters: default rest</button>
+    <button class="btn" id="showAll">📚 Show all (<span id="allCount">0</span>)</button>
     <button class="btn" id="toggleArchived">☕ Show finished (<span id="archivedCount">0</span>)</button>
     <button class="btn" id="toggleOpenedOnly">📦 Only opened (<span id="openedCount">0</span>)</button>
     <button class="btn" id="toggleClosedOnly">🔒 Only closed (<span id="closedCount">0</span>)</button>
@@ -992,6 +993,20 @@ document.getElementById('toggleFrozenOnly').addEventListener('click', () => {
   render();
 });
 
+function isShowAllState(){ return showArchived && showLeftovers && !showOpenedOnly && !showClosedOnly && !showFrozenOnly; }
+function syncFilterButtons(){
+  document.getElementById('toggleArchived').classList.toggle('primary', showArchived);
+  document.getElementById('toggleFrozenLeftovers').classList.toggle('primary', showLeftovers);
+  document.getElementById('toggleOpenedOnly').classList.toggle('primary', showOpenedOnly);
+  document.getElementById('toggleClosedOnly').classList.toggle('primary', showClosedOnly);
+  document.getElementById('toggleFrozenOnly').classList.toggle('primary', showFrozenOnly);
+  document.getElementById('showAll').classList.toggle('primary', isShowAllState());
+}
+document.getElementById('showAll').addEventListener('click', () => {
+  if(isShowAllState()){ showArchived = false; showLeftovers = false; }
+  else { showArchived = true; showLeftovers = true; showOpenedOnly = false; showClosedOnly = false; showFrozenOnly = false; }
+  render();
+});
 document.getElementById('toggleFrozenLeftovers').addEventListener('click', () => {
   showLeftovers = !showLeftovers;
   document.getElementById('toggleFrozenLeftovers').classList.toggle('primary', showLeftovers);
@@ -1170,6 +1185,8 @@ function render(){
   document.getElementById('todayLabel').textContent = fmt(today);
 
   const archivedCount = beans.filter(b => b.archived).length;
+  document.getElementById('showAll').innerHTML = `📚 ${isShowAllState() ? 'Back to default' : 'Show all'} (<span id="allCount">${beans.length}</span>)`;
+  syncFilterButtons();
   document.getElementById('toggleArchived').innerHTML = `☕ ${showArchived ? 'Hide' : 'Show'} finished (<span id="archivedCount">${archivedCount}</span>)`;
 
   const archivedFiltered0 = showArchived ? beans : beans.filter(b => !b.archived);
